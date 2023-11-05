@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+// This proto file is the contract between client and server, both entities will have the same .proto file
+
+// Specify c# namespace
+option csharp_namespace = "PlatformService";
+
+// This service allows Command Service to get all platforms
+
+service GrpcPlatform {
+    rpc GetAllPlatforms (GetAllRequest) returns (PlatformResponse);
+}
+
+
+message GetAllRequest {}
+
+message GrpcPlatformModel {
+    // Integer value, setting the position to be the first item in the proto message
+    int32 platformId = 1;
+    string name = 2;
+    string publisher = 3;
+}
+
+message PlatformResponse {
+    // We want to return a list of messages back using "repeated" keyword
+    repeated GrpcPlatformModel platform = 1;
+}
+

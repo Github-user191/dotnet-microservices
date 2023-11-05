@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: platforms-deployment # Name of Deployment
+spec:
+  replicas: 1 # replicas / instances to keep up at all times
+  selector:
+    matchLabels:
+      app: platformservice
+  template:
+    metadata:
+      labels:
+        app: platformservice
+    spec:
+      containers:
+        - name: platformservice
+          image: dockerdemo786/platformservice:latest
+---
+# Cluster IP Service to allows services inside cluster to access each other
+# and call their apis (Platforms and Commands)
+apiVersion: v1
+kind: Service
+metadata:
+  name: platforms-clusterip-service # Name of Service
+spec:
+  type: ClusterIP
+  selector:
+    app: platformservice # Link to Platform service
+  ports:
+  - name: platformservice
+    protocol: TCP
+    port: 80
+    targetPort: 80
+  - name: platformgrpc
+    protocol: TCP
+    port: 666
+    targetPort: 666

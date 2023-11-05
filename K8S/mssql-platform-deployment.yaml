@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mssql-platform-deployment # Name of Deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mssql
+  template:
+    metadata:
+      labels:
+        app: mssql
+    spec:
+      containers:
+        - name: mssql
+          image: mcr.microsoft.com/mssql/server:2017-latest
+          ports:
+            - containerPort: 1433
+          env:
+          - name: MSSQL_PID
+            value: "Express"
+          - name: ACCEPT_EULA
+            value: "Y"
+          - name: SA_PASSWORD
+          # CREATE SECRET FOR STORING PASSWORD 
+          # kubectl create secret generic mssql --from-literal=SA_PASSWORD="UGFzc3dvcmQxMjNA"
+            valueFrom:
+              secretKeyRef:
+                name: mssql # Secret Name
+                key: SA_PASSWORD
+          volumeMounts:
+          - mountPath: /var/opt/mssql/data
+            name: mssqldb
+      volumes:
+      - name: mssqldb
+        persistentVolumeClaim:
+          claimName: mssql-persistent-volume-claim
+---
+# Cluster IP Service to allows services inside cluster to access each other
+# and call their apis
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql-platform-clusterip-service
+spec:
+  type: ClusterIP
+  selector:
+    app: mssql # Link to Mssql service
+  ports:
+  - name: mssql
+    protocol: TCP
+    port: 1433
+    targetPort: 1433
+---
+# Loadbalancer Service to allow direct access from external traffic to pods
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql-platform-loadbalancer-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: mssql
+  ports:
+    - protocol: TCP
+      port: 1433
+      targetPort: 1433
+
+      

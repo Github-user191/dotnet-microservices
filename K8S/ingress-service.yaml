@@ -1,0 +1,36 @@
+# Ingress lets you map traffic to different backends based on rules you define
+# Can access pods internally using domain specified for the Ingress
+
+# Delete old webhook configs for ingress
+# kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
+
+# Nginx Ingress controller yaml
+# kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.48.1/deploy/static/provider/cloud/deploy.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-service # Name of Service
+  annotations:
+    spec.ingressClassName: nginx
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  rules:
+    - host: acme.com
+      http:
+        paths:
+          # Route to platforms controller
+          - path: /api/platforms 
+            pathType: Prefix
+            backend:
+              service:
+                name: platforms-clusterip-service
+                port: 
+                  number: 80
+          # Route to commands controller
+          - path: /api/c/platforms 
+            pathType: Prefix
+            backend:
+              service:
+                name: commands-clusterip-service
+                port: 
+                  number: 80

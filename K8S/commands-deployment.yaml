@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: commands-deployment # Name of Deployment
+spec:
+  replicas: 1 # replicas / instances to keep up at all times
+  selector:
+    matchLabels:
+      app: commandservice
+  template:
+    metadata:
+      labels:
+        app: commandservice
+    spec:
+      containers:
+        - name: commandservice
+          image: dockerdemo786/commandservice:latest
+---
+# Cluster IP Service to allows services inside cluster to access each other
+# and call their apis (Platforms and Commands)
+apiVersion: v1
+kind: Service
+metadata:
+  name: commands-clusterip-service # Name of Service
+spec:
+  type: ClusterIP
+  selector:
+    app: commandservice # Link to Platform service
+  ports:
+  - name: commandservice
+    protocol: TCP
+    port: 80
+    targetPort: 80
